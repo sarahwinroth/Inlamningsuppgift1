@@ -11,25 +11,27 @@ namespace Inlamningsuppgift1
     public static class Logic
     {
         internal static Database db = new Database();
-        public static FamilyMember crud = new FamilyMember();
+        public static Crud crud = new Crud();
 
         public static void Menu()
         {
             try
             {
                 bool runProjekt = true;
-                /*if (!db.CheckIfDatabaseExist("Genealogy"))
+                if (!db.CheckIfDatabaseExist("Genealogy"))
                 {
                     db.CreateDB("Genealogy", true);
                     AddDatabaseData();
-                } */
+                } 
+                else
+                { db.DatabaseName = "Genealogy"; }
                 while(runProjekt)
                     {
                     Console.Clear();
                     Console.WriteLine("Du är nu kopplad till databasen: " + db.DatabaseName);
                     Console.WriteLine("1. Skapa en familjemedlem");
                     Console.WriteLine("2. Redigera familjemedlem");// Meny
-                    Console.WriteLine("3. Lista familjemedlemmar efter specifika kriterier");// Meny kolla denna
+                    Console.WriteLine("3. Sök i familjeträdet");// Meny kolla denna
                     Console.WriteLine("4. Exit");
 
                     Console.Write("> ");
@@ -44,10 +46,9 @@ namespace Inlamningsuppgift1
                             EditPerson();
                             break;
                         case 3:
+                            SearchInFamily();
                             break;
                         case 4:
-                            break;
-                        case 5:
                             Console.WriteLine("In case I don't see you, good afternoon, good evening and good night! - Truman Burbank");
                             Console.ReadLine();
                             runProjekt = false;
@@ -58,15 +59,15 @@ namespace Inlamningsuppgift1
                     }
                 }
             }
-            catch //(Exception ex)
+            catch(Exception ex)
             {
-                //Console.WriteLine(ex);
-                Menu();
+                Console.WriteLine(ex);
             }           
         }
         public static void AddPerson()
         {
-            Console.WriteLine("Du är nu kopplad till databasen: " + db.DatabaseName);
+            Console.Clear();
+            Console.WriteLine("[LÄGG TILL PERSON]");
             Console.WriteLine("Ange uppgifter om personen du vill lägga till som familjemedlem");
             Console.WriteLine("Förnamn:");
             Console.Write("> ");
@@ -77,11 +78,11 @@ namespace Inlamningsuppgift1
             Console.WriteLine("Födelsedatum (YYMMDD):");
             Console.Write("> ");
             string dateOfBirth = Console.ReadLine();
-            Console.WriteLine("Ange Fader (För- och efternamn):");
+            Console.WriteLine("Ange Far (För- och efternamn):");
             Console.Write("> ");
             string father = Console.ReadLine();
             int fatherId = Convert.ToInt32(crud.GetParentId(father));
-            Console.WriteLine("Ange Moder (För- och efternamn):");
+            Console.WriteLine("Ange Mor (För- och efternamn):");
             Console.Write("> ");
             string mother = Console.ReadLine();
             int motherId = Convert.ToInt32(crud.GetParentId(mother));
@@ -122,6 +123,7 @@ namespace Inlamningsuppgift1
             bool run = true;
             
             Console.Clear();
+            Console.WriteLine("[REDIGERA PERSON]");
             if (person == null)
             { Console.WriteLine("Vänligen skriv in namnet på personen du vill redigera:");
                 Console.Write("> ");
@@ -264,9 +266,107 @@ namespace Inlamningsuppgift1
                         break;
                     case 3:
                         run = false;
-                        //Menu();
                         break;
                 }
+            }
+        }       
+        public static void SearchInFamily()
+        {
+            bool run = true;
+            while (run)
+            {
+                Person person;
+                string userInput;
+                List<Person> ListOfPersons;
+                Console.Clear();
+                Console.WriteLine("Du är nu kopplad till databasen: " + db.DatabaseName);
+                Console.WriteLine("[SÖK EFTER..]");
+                Console.WriteLine("1. En specifik person i familjeträdet");
+                Console.WriteLine("2. Personer som börjar på en specifik bokstav");
+                Console.WriteLine("3. Personer som är födda ett visst år");
+                Console.WriteLine("4. Personer med samma föräldrar");
+                Console.WriteLine("5. Syskon med samma mor");
+                Console.WriteLine("6. Syskon med samma far");
+                Console.WriteLine("7. Syskon till en person");//
+                Console.WriteLine("8. Person och deras mor/far-föräldrar");
+                Console.WriteLine("9. Personer som saknar födelsedatum");//
+                Console.WriteLine("10. Personer som saknar föräldrar");//
+                Console.WriteLine("11. Exit");
+                Console.Write("> ");
+                int input = Convert.ToInt32(Console.ReadLine());
+                
+                switch(input)
+                {
+                    case 1:
+                        Console.WriteLine("Skriv in namnet på personen:");
+                        Console.Write("> ");
+                        userInput = Console.ReadLine();
+                        person = crud.Read(userInput);
+                        crud.Print(person);
+                        Console.ReadLine();
+                        break;
+                    case 2:
+                        Console.WriteLine("Skriv in en bokstav som du vill utgå sökningen ifrån:");
+                        Console.Write("> ");
+                        userInput = Console.ReadLine();
+                        ListOfPersons = crud.ListByFirstLetter(userInput);
+                        GetPersonsFromList(ListOfPersons);
+                        Console.ReadLine();
+                        break;
+                    case 3:
+                        Console.WriteLine("Skriv in ett årtal och se vilka personer som är födda då:");
+                        Console.Write("> ");
+                        userInput = Console.ReadLine();
+                        ListOfPersons = crud.ListByDateOfBirth(userInput);
+                        GetPersonsFromList(ListOfPersons);
+                        Console.ReadLine();
+                        break;
+                    case 4:
+                        Console.WriteLine("Skriv in namnet på fadern:");
+                        Console.Write("> ");
+                        string father = Console.ReadLine();
+                        Console.WriteLine("Skriv in namnet på modern:");
+                        Console.Write("> ");
+                        string mother = Console.ReadLine();
+                        ListOfPersons = crud.ListByParents(mother, father);
+                        GetPersonsFromList(ListOfPersons);
+                        Console.ReadLine();
+                        break;
+                    case 5:
+                        Console.WriteLine("Skriv in namnet på moder:");
+                        Console.Write("> ");
+                        userInput = Console.ReadLine();
+                        ListOfPersons = crud.ListByMother(userInput);
+                        GetPersonsFromList(ListOfPersons);
+                        Console.ReadLine();
+                        break;
+                    case 6:
+                        Console.WriteLine("Skriv in namnet på fadern du vill lista barnen för:");
+                        Console.Write("> ");
+                        userInput = Console.ReadLine();
+                        ListOfPersons = crud.ListByFather(userInput);
+                        GetPersonsFromList(ListOfPersons);
+                        Console.ReadLine();
+                        break;
+                    case 8:
+                        Console.WriteLine("Skriv in namnet på personen du vill se dennes mor-och farföräldrar:");
+                        Console.Write("> ");
+                        userInput = Console.ReadLine();
+                        person = crud.Read(userInput);
+                        crud.PrintWithParents(person);
+                        Console.ReadLine();
+                        break;
+                    case 11:
+                        run = false;
+                        break;
+                }
+            }
+        } 
+        public static void GetPersonsFromList(List<Person> list)
+        {
+            foreach (var p in list)
+            {
+                crud.Print(p);
             }
         }
         public static void ContinueOrQuit()
@@ -291,106 +391,22 @@ namespace Inlamningsuppgift1
                             [FirstName] [nvarchar](255) NULL,
                             [LastName] [nvarchar](255) NULL,
                             [DateOfBirth] [nvarchar](50) NULL,
-                            [FatherId] [int] NULL,
-                            [MotherId] [int] NULL
+                            [FatherId] [int] DEFAULT 0,
+                            [MotherId] [int] DEFAULT 0
                             ) ON [PRIMARY]");
-            
+            //[FatherId] [int] DEFAULT 0,
             db.ExecuteSQL(@"
-            INSERT INTO Family(firstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Ivan', 'Winroth', '200103', null, null);
-            INSERT INTO Family(firstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Stina', 'Winroth', '251019', null, null);
-            INSERT INTO Family(firstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Bo', 'Linde', '320716', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Ivan', 'Winroth', '200103', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Stina', 'Winroth', '251019', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Bo', 'Linde', '320716', null, null);
             INSERT INTO Family(firstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Inger', 'Linde', '360215', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Sture', 'Winroth', '571211', 1, 2);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Ingela', 'Winroth', '610608', 3, 4);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Fredrik', 'Winroth', '840401', 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Charlotte', 'Fransson', '860331', 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Sarah', 'Winroth', '890928', 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Rebecca', 'Winroth', '970818', 5, 6);
             ");
-            /*var morfar = new Person
-            {
-                FirstName = "Bo",
-                LastName = "Linde",
-                DateOfBirth = "320716",
-                FatherId = default,
-                MotherId = default,
-            };
-            var mormor = new Person
-            {
-                FirstName = "Inger",
-                LastName = "Linde",
-                DateOfBirth = "360215",
-                FatherId = default,
-                MotherId = default,
-            };
-            var farfar = new Person
-            {
-                FirstName = "Ivan",
-                LastName = "Winroth",
-                DateOfBirth = "200103",
-                FatherId = default,
-                MotherId = default,
-            };
-            var farmor = new Person
-            {
-                FirstName = "Stina",
-                LastName = "Winroth",
-                DateOfBirth = "251019",
-                FatherId = default,
-                MotherId = default,
-            };
-            var pappa = new Person
-            {
-                FirstName = "Sture",
-                LastName = "Winroth",
-                DateOfBirth = "571211",
-                FatherId = default,
-                MotherId = default,
-            };
-            var mamma = new Person
-            {
-                FirstName = "Ingela",
-                LastName = "Winroth",
-                DateOfBirth = "610608",
-                FatherId = default,
-                MotherId = default,
-            };
-            var bror = new Person
-            {
-                FirstName = "Fredrik",
-                LastName = "Winroth",
-                DateOfBirth = "840401",
-                FatherId = default,
-                MotherId = default,
-            };
-            var storaSyster = new Person
-            {
-                FirstName = "Charlotte",
-                LastName = "Fransson",
-                DateOfBirth = "860331",
-                FatherId = default,
-                MotherId = default,
-            };
-            var jag = new Person
-            {
-                FirstName = "Sarah",
-                LastName = "Winroth",
-                DateOfBirth = "890928",
-                FatherId = default,
-                MotherId = default,
-            };
-            var lillaSyster = new Person
-            {
-                FirstName = "Rebecca",
-                LastName = "Winroth",
-                DateOfBirth = "970818",
-                FatherId = default,
-                MotherId = default,
-            };
-            crud.Create(morfar);
-            crud.Create(mormor);
-            crud.Create(farfar);
-            crud.Create(farmor);
-            crud.Create(pappa);
-            crud.Create(mamma);
-            crud.Create(bror);
-            crud.Create(storaSyster);
-            crud.Create(jag);
-            crud.Create(lillaSyster);*/
         }
     }
 }

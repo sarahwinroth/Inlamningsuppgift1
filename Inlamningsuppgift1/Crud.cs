@@ -7,12 +7,12 @@ using System.IO;
 
 namespace Inlamningsuppgift1
 {
-    public class FamilyMember
+    public class Crud
     {
         internal static Database db = new Database();
         public bool CheckIfPersonExist(string firstName, string lastName, int fatherId, int motherId)
         {
-            var row = db.GetDataTable("SELECT TOP 1 * from Family Where FirstName LIKE @firstName AND LastName LIKE @lastName AND FatherId = @fatherId AND MotherId = @motherId", ("@firstName", firstName.ToString()), ("@lastName", lastName.ToString()), ("@fatherId", fatherId.ToString()), ("@motherId", motherId.ToString()));
+            var row = db.GetDataTable("SELECT TOP 1 * from Family Where FirstName LIKE @FirstName AND LastName LIKE @LastName AND FatherId = @FatherId AND MotherId = @MotherId", ("@FirstName", firstName.ToString()), ("@LastName", lastName.ToString()), ("@FatherId", fatherId.ToString()), ("@MotherId", motherId.ToString()));
             if (row.Rows.Count > 0)
             { return true; }
             else
@@ -25,9 +25,9 @@ namespace Inlamningsuppgift1
             {
                 var names = name.Split(' ');
 
-                dt = db.GetDataTable("SELECT TOP 1 * from Family Where firstName LIKE @fname AND lastName LIKE @lname",
-                    ("@fname", names[0]),
-                    ("@lname", names[^1])
+                dt = db.GetDataTable("SELECT TOP 1 * from Family Where FirstName LIKE @FirstName AND LastName LIKE @LastName",
+                    ("@FirstName", names[0]),
+                    ("@LastName", names[^1])
                     );
                 foreach (DataRow row in dt.Rows)
                 {
@@ -36,7 +36,7 @@ namespace Inlamningsuppgift1
             }
             else
             {
-                dt = db.GetDataTable("SELECT TOP 1 * from Family Where firstName LIKE @name OR lastName LIKE @name ", ("@name", name));
+                dt = db.GetDataTable("SELECT TOP 1 * from Family Where FirstName LIKE @name OR LastName LIKE @name ", ("@name", name));
                 foreach (DataRow row in dt.Rows)
                 {
                     return row["Id"].ToString().Trim();
@@ -124,6 +124,14 @@ namespace Inlamningsuppgift1
 
             return GetPersonObject(dt.Rows[0]);
         }
+        
+        public static T GetValue<T>(object value) 
+        {
+            if (value == null || value == DBNull.Value)
+                return default;
+            else
+                return (T)value;
+        }
         public Person GetPersonObject(DataRow row)
         {
             return new Person
@@ -132,19 +140,42 @@ namespace Inlamningsuppgift1
                 FirstName = row["FirstName"].ToString(),
                 LastName = row["LastName"].ToString(),
                 DateOfBirth = row["DateOfBirth"].ToString(),
-                FatherId = (int)row["FatherId"],
-                MotherId = (int)row["MotherId"],
+                FatherId = GetValue<int>(row["FatherId"]),
+                MotherId = GetValue<int>(row["MotherId"])
             };
         }
         public void Print(Person person)
         {
             if (person != null)
             {
+                Console.WriteLine($"\n> Förnamn: {person.FirstName}\n> Efternamn: {person.LastName}\n> Födelsedatum: {person.DateOfBirth}"); 
+            }
+            else
+            { 
+                Console.WriteLine("Personen existerar inte!");
+                Console.WriteLine("\nVill du lägga till en familjemedlem? J/N");
+                string choice = Console.ReadLine();
+                if (choice.ToLower().Replace(" ", "") == "n")
+                {
+                    Logic.Menu();
+                }
+                else
+                {
+                    Logic.AddPerson();
+                }
+            }
+        }
+        public void PrintWithParents(Person person)
+        {
+            if (person != null)
+            {
                 var father = GetParentNameById(person.FatherId);
                 var mother = GetParentNameById(person.MotherId);
-                Console.WriteLine($"\n> Förnamn: {person.FirstName}\n> Efternamn: {person.LastName}\n> Födelsedatum: {person.DateOfBirth}\n> Far: {father}\n> Mor: {mother}\n"); }
+                Console.WriteLine($"\n> Förnamn: {person.FirstName}\n> Efternamn: {person.LastName}\n> Födelsedatum: {person.DateOfBirth}\n> Far: {father}\n> Mor: {mother}\n");
+            }
             else
-            { Console.WriteLine("Personen existerar inte!");
+            {
+                Console.WriteLine("Personen existerar inte!");
                 Console.WriteLine("\nVill du lägga till en familjemedlem? J/N");
                 string choice = Console.ReadLine();
                 if (choice.ToLower().Replace(" ", "") == "n")
@@ -171,7 +202,44 @@ namespace Inlamningsuppgift1
         }
         public void Delete(Person person)
         {
-            db.ExecuteSQL("DELETE FROM Family Where Id=@id", ("@Id", person.Id.ToString()));
+            db.ExecuteSQL("DELETE FROM Family Where Id=@Id", ("@Id", person.Id.ToString()));
+        }
+        public List<Person> ListByFirstLetter(string letter)
+        {
+            string parameter = $"{letter.ToUpper()}%";
+            var data = db.GetDataTable("SELECT * FROM Family WHERE FirstName LIKE @Letter", ("@Letter", parameter));
+            return List(data);
+        }
+        
+        public List<Person> ListByMother(string name)
+        {
+            var data = db.GetDataTable("SELECT * FROM Family WHERE MotherId=@Mother", ("@Mother", GetParentId(name)));
+            return List(data);
+        }
+        public List<Person> ListByFather(string name)
+        {
+            var data = db.GetDataTable("SELECT * FROM Family WHERE FatherId=@Father", ("@Father", GetParentId(name)));
+            return List(data);
+        }
+        public List<Person> ListByParents(string motherName, string fatherName)
+        {
+            var data = db.GetDataTable("SELECT * FROM Family WHERE MotherId=@Mother AND FatherId=@Father", ("@Mother", GetParentId(motherName)), ("@Father", GetParentId(fatherName)));
+            return List(data);
+        }
+        public List<Person> ListByDateOfBirth(string input)
+        {
+            string year = $"{input}%";
+            var data = db.GetDataTable("SELECT * FROM Family WHERE DateOfBirth LIKE @Year", ("@Year", year));
+            return List(data);
+        }
+        public List<Person> List(DataTable data)
+        {         
+            var lst = new List<Person>();
+            foreach (DataRow row in data.Rows)
+            {
+                lst.Add(GetPersonObject(row));
+            }
+            return lst;
         }
     }
 }

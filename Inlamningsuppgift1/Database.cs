@@ -10,7 +10,7 @@ namespace Inlamningsuppgift1
     internal class Database
     {
         internal string ConnectionString { get; set; } = @"Data Source=.\SQLExpress;Integrated Security=true;database={0}";
-        internal string DatabaseName { get; set; } = "Genealogy";
+        internal string DatabaseName { get; set; } = "Genealogy"; //master Genealogy
 
         internal DataTable GetDataTable(string sqlString, params (string, string)[] parameters)
         {
