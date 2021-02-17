@@ -77,7 +77,13 @@ namespace Inlamningsuppgift1
             string lastName = Console.ReadLine();
             Console.WriteLine("Födelsedatum (YYMMDD):");
             Console.Write("> ");
-            string dateOfBirth = Console.ReadLine();
+            string cityOfBirth = Console.ReadLine();
+            Console.WriteLine("Födelsestad:");
+            Console.Write("> ");
+            string cityOfDeath = Console.ReadLine();
+            Console.WriteLine("Dödsstad:");
+            Console.Write("> ");
+            int dateOfBirth = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Ange Far (För- och efternamn):");
             Console.Write("> ");
             string father = Console.ReadLine();
@@ -94,6 +100,8 @@ namespace Inlamningsuppgift1
                     FirstName = firstName,
                     LastName = lastName,
                     DateOfBirth = dateOfBirth,
+                    CityOfBirth = cityOfBirth,
+                    CityOfDeath = cityOfDeath,
                     FatherId = fatherId,
                     MotherId = motherId,
                 };
@@ -163,11 +171,25 @@ namespace Inlamningsuppgift1
                     case "födelsedatum":
                         Console.WriteLine("Skriv in det nya födelsedatumet:");
                         Console.Write("> ");
-                        string newDateOfBirth = Console.ReadLine();
-                        person.FirstName = newDateOfBirth;
+                        int newDateOfBirth = Convert.ToInt32(Console.ReadLine());
+                        person.DateOfBirth = newDateOfBirth;
                         crud.Update(person);
                         break;
-                    case "far":
+                      case "födelsstad":
+                                Console.WriteLine("Skriv in det nya födelsedatumet:");
+                                Console.Write("> ");
+                                string newCityOfBirth = Console.ReadLine();
+                                person.CityOfBirth = newCityOfBirth;
+                                crud.Update(person);
+                                break;
+                            case "dödsstad":
+                                Console.WriteLine("Skriv in det nya födelsedatumet:");
+                                Console.Write("> ");
+                                string newCityOfDeath = Console.ReadLine();
+                                person.CityOfDeath = newCityOfDeath;
+                                crud.Update(person);
+                                break;
+                            case "far":
                         Console.WriteLine("Skriv in det nya namnet på din far:");
                         Console.Write("> ");
                         string newFather = Console.ReadLine();
@@ -191,7 +213,6 @@ namespace Inlamningsuppgift1
                 break;
                 case 3:
                         run = false;
-                    //Menu();
                 break;
             }
         }
@@ -234,12 +255,26 @@ namespace Inlamningsuppgift1
                                 string newLastName = Console.ReadLine();
                                 person.FirstName = newLastName;
                                 crud.Update(person);
-                                break;
+                                break;                           
                             case "födelsedatum":
                                 Console.WriteLine("Skriv in det nya födelsedatumet:");
                                 Console.Write("> ");
-                                string newDateOfBirth = Console.ReadLine();
-                                person.FirstName = newDateOfBirth;
+                                int newDateOfBirth = Convert.ToInt32(Console.ReadLine());
+                                person.DateOfBirth = newDateOfBirth;
+                                crud.Update(person);
+                                break;
+                            case "födelsstad":
+                                Console.WriteLine("Skriv in det nya födelsedatumet:");
+                                Console.Write("> ");
+                                string newCityOfBirth = Console.ReadLine();
+                                person.CityOfBirth = newCityOfBirth;
+                                crud.Update(person);
+                                break;
+                            case "dödsstad":
+                                Console.WriteLine("Skriv in det nya födelsedatumet:");
+                                Console.Write("> ");
+                                string newCityOfDeath = Console.ReadLine();
+                                person.CityOfDeath = newCityOfDeath;
                                 crud.Update(person);
                                 break;
                             case "far":
@@ -364,9 +399,16 @@ namespace Inlamningsuppgift1
         } 
         public static void GetPersonsFromList(List<Person> list)
         {
-            foreach (var p in list)
+            if (list.Count != 0)
             {
-                crud.Print(p);
+                foreach (var p in list)
+                {
+                    crud.Print(p);
+                }
+            }
+            if (list.Count == 0)
+            {
+                Console.WriteLine("Det finns ingen person som matchar din sökning, vänligen försök igen!");
             }
         }
         public static void ContinueOrQuit()
@@ -390,22 +432,24 @@ namespace Inlamningsuppgift1
                             [Id] [int] IDENTITY (1,1) NOT NULL,
                             [FirstName] [nvarchar](255) NULL,
                             [LastName] [nvarchar](255) NULL,
-                            [DateOfBirth] [nvarchar](50) NULL,
+                            [DateOfBirth] [int] DEFAULT 0,
+                            [CityOfBirth] [nvarchar](255) NULL,
+                            [CityOfDeath] [nvarchar](255) NULL,
                             [FatherId] [int] DEFAULT 0,
                             [MotherId] [int] DEFAULT 0
                             ) ON [PRIMARY]");
             //[FatherId] [int] DEFAULT 0,
             db.ExecuteSQL(@"
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Ivan', 'Winroth', '200103', null, null);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Stina', 'Winroth', '251019', null, null);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Bo', 'Linde', '320716', null, null);
-            INSERT INTO Family(firstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Inger', 'Linde', '360215', null, null);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Sture', 'Winroth', '571211', 1, 2);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Ingela', 'Winroth', '610608', 3, 4);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Fredrik', 'Winroth', '840401', 5, 6);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Charlotte', 'Fransson', '860331', 5, 6);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Sarah', 'Winroth', '890928', 5, 6);
-            INSERT INTO Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES('Rebecca', 'Winroth', '970818', 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Ivan', 'Winroth', 20, 'Öttum, Sverige', 'Kvänum, Sverige', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Stina', 'Winroth', 25, 'Öttum, Sverige', 'Kvänum, Sverige', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Bo', 'Linde', 32, 'Vemdalen, Sverige', 'Skara, Sverige', null, null);
+            INSERT INTO Family(firstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Inger', 'Linde', 36, 'Karlstad, Sverige', 'Skara, Sverige', null, null);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Sture', 'Winroth', 57, 'Öttum, Sverige', null, 1, 2);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Ingela', 'Winroth', 61, 'Karlstad, Sverige', null, 3, 4);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Fredrik', 'Winroth', 84, 'Öttum, Sverige', null, 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Charlotte', 'Fransson', 86, 'Öttum, Sverige', null, 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Sarah', 'Winroth', 89, 'Öttum, Sverige', null, 5, 6);
+            INSERT INTO Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES('Rebecca', 'Winroth', 97, 'Öttum, Sverige', null, 5, 6);
             ");
         }
     }

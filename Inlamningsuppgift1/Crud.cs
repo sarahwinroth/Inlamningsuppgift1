@@ -65,12 +65,14 @@ namespace Inlamningsuppgift1
                 using (var cnn = new SqlConnection(connectionString))
                 {
                     cnn.Open();
-                    var sql = $"Use {db.DatabaseName} INSERT INTO dbo.Family(FirstName, LastName, DateOfBirth, FatherId, MotherId) VALUES(@FirstName, @LastName, @DateOfBirth, @FatherId, @MotherId)";
+                    var sql = $"Use {db.DatabaseName} INSERT INTO dbo.Family(FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, FatherId, MotherId) VALUES(@FirstName, @LastName, @DateOfBirth, @CityOfBirth, @CityOfDeath, @FatherId, @MotherId)";
                     using (var cmd = new SqlCommand(sql, cnn))
                     {
                         cmd.Parameters.AddWithValue("@FirstName", person.FirstName);
                         cmd.Parameters.AddWithValue("@LastName", person.LastName);
                         cmd.Parameters.AddWithValue("@DateOfBirth", person.DateOfBirth);
+                        cmd.Parameters.AddWithValue("@CityOfBirth", person.CityOfBirth);
+                        cmd.Parameters.AddWithValue("@CityOfDeath", person.CityOfDeath);
                         cmd.Parameters.AddWithValue("@FatherId", person.FatherId);
                         cmd.Parameters.AddWithValue("@MotherId", person.MotherId);
                         cmd.ExecuteNonQuery();
@@ -139,7 +141,9 @@ namespace Inlamningsuppgift1
                 Id = (int)row["Id"],
                 FirstName = row["FirstName"].ToString(),
                 LastName = row["LastName"].ToString(),
-                DateOfBirth = row["DateOfBirth"].ToString(),
+                DateOfBirth = GetValue<int>(row["DateOfBirth"]),
+                CityOfBirth = row["CityOfBirth"].ToString(),
+                CityOfDeath = row["CityOfDeath"].ToString(),
                 FatherId = GetValue<int>(row["FatherId"]),
                 MotherId = GetValue<int>(row["MotherId"])
             };
@@ -194,7 +198,9 @@ namespace Inlamningsuppgift1
             WHERE Id=@Id", 
             ("@FirstName", person.FirstName),
             ("@LastName", person.LastName),
-            ("@DateOfBirth", person.DateOfBirth),
+            ("@DateOfBirth", person.DateOfBirth.ToString()),
+            ("@CityOfBirth", person.CityOfBirth),
+            ("@CityOfDeath", person.CityOfDeath),
             ("@FatherId", person.FatherId.ToString()),
             ("@MotherId", person.MotherId.ToString()),
             ("@Id", person.Id.ToString())

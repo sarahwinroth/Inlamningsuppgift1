@@ -83,12 +83,14 @@ namespace Inlamningsuppgift1
                 using (var cnn = new SqlConnection(connectionString))
                 {
                     cnn.Open();
-                    var sql = "INSERT INTO Person (FirstName, LastName, DateOfBirth, Father, Mother) VALUES(@FirstName, @LastName, @DateOfBirth, @Father, @Mother)";
+                    var sql = "INSERT INTO Person (FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, Father, Mother) VALUES(@FirstName, @LastName, @DateOfBirth, @CityOfBirth, @CityOfDeath, @Father, @Mother)";
                     using (var command = new SqlCommand(sql, cnn))
                     {
                         command.Parameters.AddWithValue("@FirstName", person.FirstName);
                         command.Parameters.AddWithValue("@LastFirstName", person.LastName);
                         command.Parameters.AddWithValue("@DateOfBirth", person.DateOfBirth);
+                        command.Parameters.AddWithValue("@CityOfBirth", person.CityOfBirth);
+                        command.Parameters.AddWithValue("@CityOfDeath", person.CityOfDeath);
                         command.Parameters.AddWithValue("@Father", person.FatherId);
                         command.Parameters.AddWithValue("@Mother", person.MotherId);
                         command.ExecuteNonQuery();
