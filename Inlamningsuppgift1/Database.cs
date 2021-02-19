@@ -1,16 +1,14 @@
 ﻿using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Data.SqlClient;
-    using System.Diagnostics;
-    using System.IO;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
 
 namespace Inlamningsuppgift1
 {
     internal class Database
     {
         internal string ConnectionString { get; set; } = @"Data Source=.\SQLExpress;Integrated Security=true;database={0}";
-        internal string DatabaseName { get; set; } = "Genealogy"; //master Genealogy
+        internal string DatabaseName { get; set; } //master Genealogy
 
         internal DataTable GetDataTable(string sqlString, params (string, string)[] parameters)
         {
@@ -46,6 +44,7 @@ namespace Inlamningsuppgift1
 
             return dataTable;
         }
+
         private void SetParameters((string, string)[] parameters, SqlCommand cmd)
         {
             foreach (var item in parameters)
@@ -53,6 +52,7 @@ namespace Inlamningsuppgift1
                 cmd.Parameters.AddWithValue(item.Item1, item.Item2);
             }
         }
+
         internal long ExecuteSQL(string sqlString, params (string, string)[] parameters)
         {
             long rowsAffected = 0;
@@ -75,6 +75,7 @@ namespace Inlamningsuppgift1
             }
             return rowsAffected;
         }
+
         internal void Create(Person person)
         {
             try
@@ -83,7 +84,7 @@ namespace Inlamningsuppgift1
                 using (var cnn = new SqlConnection(connectionString))
                 {
                     cnn.Open();
-                    var sql = "INSERT INTO Person (FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, Father, Mother) VALUES(@FirstName, @LastName, @DateOfBirth, @CityOfBirth, @CityOfDeath, @Father, @Mother)";
+                    var sql = "INSERT INTO Family (FirstName, LastName, DateOfBirth, CityOfBirth, CityOfDeath, Father, Mother) VALUES(@FirstName, @LastName, @DateOfBirth, @CityOfBirth, @CityOfDeath, @Father, @Mother)";
                     using (var command = new SqlCommand(sql, cnn))
                     {
                         command.Parameters.AddWithValue("@FirstName", person.FirstName);
@@ -102,16 +103,19 @@ namespace Inlamningsuppgift1
                 Console.WriteLine(ex.Message);
             }
         }
+
         internal bool CheckIfDatabaseExist(string name)
         {
             var db = GetDataTable("SELECT name FROM sys.databases Where name = @name", ("@name", name));
             return db?.Rows.Count > 0;
         }
+
         internal void CreateDB(string name, bool createNewDatabase = false)
         {
             ExecuteSQL("Create database " + name);
             if (createNewDatabase) DatabaseName = name;
         }
+
         internal void CreateTable(string name, string fields)
         {
             ExecuteSQL($"CREATE TABLE [dbo].{name} {fields};");

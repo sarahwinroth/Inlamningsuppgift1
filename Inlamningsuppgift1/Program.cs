@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace Inlamningsuppgift1
+﻿namespace Inlamningsuppgift1
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Logic.Menu();
         }
